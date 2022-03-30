@@ -6,26 +6,27 @@
 - copy the file into `~/.config/qtile/spotify.py` your own `config.py` should be in the same directory
 
 ## In config.py
-    ```python
-    from spotify import Spotify
 
-    #...rest of config
+```python
+from spotify import Spotify
 
-    # add Spotify to list of widgets
-    screens = [
-        Screen(
-                bottom=bar.Bar(
-                    widgets=[
-                        Spotify(), # add config options as you like them
-                    ],
-                    size=24,
-                    # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
-                    # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
-                ),
+#...rest of config
+
+# add Spotify to list of widgets
+screens = [
+    Screen(
+            bottom=bar.Bar(
+                widgets=[
+                    Spotify(), # add config options as you like them
+                ],
+                size=24,
+                # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
+                # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
             ),
-        ]
+        ),
     ]
-    ```
+]
+```
 
 # Customization
 
