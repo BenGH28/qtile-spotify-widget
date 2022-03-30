@@ -1,6 +1,8 @@
 # Spotify
 - a Qtile widget for viewing and interacting your current spotify track
 
+![image](https://user-images.githubusercontent.com/45215137/160912874-9f6ebaa4-5b9a-4fda-9fcb-ecc7d04123a9.png)
+
 # Install
 
 - copy the file into `~/.config/qtile/spotify.py` your own `config.py` should be in the same directory
