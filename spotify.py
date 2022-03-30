@@ -22,7 +22,7 @@
 
 import subprocess
 
-from libqtile.utils import add_signal_receiver
+# from libqtile.utils import add_signal_receiver
 from libqtile.widget import base
 
 
