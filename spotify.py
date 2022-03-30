@@ -22,6 +22,7 @@
 
 import subprocess
 
+from libqtile.lazy import lazy
 # from libqtile.utils import add_signal_receiver
 from libqtile.widget import base
 
@@ -41,6 +42,9 @@ class Spotify(base.ThreadPoolText):
     def __init__(self, **config):
         base.ThreadPoolText.__init__(self, '', **config)
         self.add_defaults(Spotify.defaults)
+        self.add_callbacks({
+            'Button3': self.go_to_spotify,
+        })
 
     def play(self):
         pass
@@ -53,6 +57,19 @@ class Spotify(base.ThreadPoolText):
             self.play()
         else:
             self.pause()
+
+    def go_to_spotify(self):
+        """switch to witchever group has the current spotify instance"""
+        all_groups = self.qtile.cmd_groups()
+        dunst = "dunstify '{0}'"
+        group = self.bar.screen.group
+        for k, info in all_groups.items():
+            windows: list[str] = info['windows']
+            if "Spotify" in windows:
+                # switch to 'k' group
+                subprocess.run(dunst.format(lazy.group[k]), shell=True)
+                lazy.group[k].toscreen()
+                break
 
     def poll(self) -> str:
         """Poll content for the text box"""
@@ -68,33 +85,33 @@ class Spotify(base.ThreadPoolText):
 
         return self.format.format(**vars)
 
-    @property
+    @ property
     def meta(self) -> str:
         return subprocess.run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'",
                               shell=True,
                               capture_output=True).stdout.decode('utf-8').strip('\n')
 
-    @property
+    @ property
     def artist(self) -> str:
         return subprocess.run(f"echo '{self.meta}' | grep -m 1 'xesam:artist' -b2 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
                               shell=True,
                               capture_output=True).stdout.decode('utf-8').strip('\n')
 
-    @property
+    @ property
     def song_title(self) -> str:
         return subprocess.run(
             f"echo '{self.meta}' | grep -m 1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
             shell=True,
             capture_output=True).stdout.decode('utf-8').strip('\n')
 
-    @property
+    @ property
     def album(self) -> str:
         return subprocess.run(
             f"echo '{self.meta}' | grep -m 1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
             shell=True,
             capture_output=True).stdout.decode('utf-8').strip('\n')
 
-    @property
+    @ property
     def playing(self) -> bool:
         playing = subprocess.run(
             f"dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'PlaybackStatus' | grep -o Playing",
