@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import subprocess
+from subprocess import run
+from typing import List
 
+from libqtile.group import _Group
 from libqtile.lazy import lazy
 # from libqtile.utils import add_signal_receiver
 from libqtile.widget import base
@@ -58,17 +60,39 @@ class Spotify(base.ThreadPoolText):
         else:
             self.pause()
 
+    def _is_proc_running(self, proc_name: str) -> bool:
+        # create regex pattern to search for to avoid similar named processes
+        pattern = proc_name + '$'
+
+        # pgrep will return a string of pids for matching processes
+        proc_out = run(['pgrep', '-fli', pattern],
+                       capture_output=True).stdout.decode("utf-8")
+
+        # empty string means nothing started
+        if proc_out == "":
+            return False
+        return True
+
     def go_to_spotify(self):
-        """switch to witchever group has the current spotify instance"""
-        all_groups = self.qtile.cmd_groups()
-        dunst = "dunstify '{0}'"
-        group = self.bar.screen.group
-        for k, info in all_groups.items():
-            windows: list[str] = info['windows']
+        """
+        Switch to whichever group has the current spotify instance
+        if none exists then we will spawn an instance on the current group
+        """
+        # spawn spotify if not already running
+        if not self._is_proc_running('spotify'):
+            self.qtile.cmd_spawn('spotify', shell=True)
+            return
+
+        all_groups: List[_Group] = self.qtile.groups
+        # we need to find the group that has spotify in it
+        for group in all_groups:
+            info = group.info()
+            # get a list of windows for the group.  We look for 'Spotify here'
+            windows = info['windows']
+            name = group.name
             if "Spotify" in windows:
-                # switch to 'k' group
-                subprocess.run(dunst.format(lazy.group[k]), shell=True)
-                lazy.group[k].toscreen()
+                # switch to 'name' group
+                self.qtile.groups_map[name].cmd_toscreen()
                 break
 
     def poll(self) -> str:
@@ -83,37 +107,38 @@ class Spotify(base.ThreadPoolText):
         vars["track"] = self.song_title
         vars["album"] = self.album
 
+        # TODO: sanitize the strings for apostrophes which break the display
         return self.format.format(**vars)
 
     @ property
     def meta(self) -> str:
-        return subprocess.run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'",
-                              shell=True,
-                              capture_output=True).stdout.decode('utf-8').strip('\n')
+        return run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'",
+                   shell=True,
+                   capture_output=True).stdout.decode('utf-8').strip('\n')
 
     @ property
     def artist(self) -> str:
-        return subprocess.run(f"echo '{self.meta}' | grep -m 1 'xesam:artist' -b2 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
-                              shell=True,
-                              capture_output=True).stdout.decode('utf-8').strip('\n')
+        return run(f"echo '{self.meta}' | grep -m 1 'xesam:artist' -b2 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
+                   shell=True,
+                   capture_output=True).stdout.decode('utf-8').strip('\n')
 
     @ property
     def song_title(self) -> str:
-        return subprocess.run(
+        return run(
             f"echo '{self.meta}' | grep -m 1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
             shell=True,
             capture_output=True).stdout.decode('utf-8').strip('\n')
 
     @ property
     def album(self) -> str:
-        return subprocess.run(
+        return run(
             f"echo '{self.meta}' | grep -m 1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
             shell=True,
             capture_output=True).stdout.decode('utf-8').strip('\n')
 
     @ property
     def playing(self) -> bool:
-        playing = subprocess.run(
+        playing = run(
             f"dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'PlaybackStatus' | grep -o Playing",
             shell=True,
             capture_output=True).stdout.decode('utf-8').strip('\n')
