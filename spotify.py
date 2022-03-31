@@ -111,28 +111,28 @@ class Spotify(base.ThreadPoolText):
         return self.format.format(**vars)
 
     @ property
-    def meta(self) -> str:
+    def _meta(self) -> str:
         return run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'",
                    shell=True,
                    capture_output=True).stdout.decode('utf-8').strip('\n')
 
     @ property
     def artist(self) -> str:
-        return run(f"echo '{self.meta}' | grep -m 1 'xesam:artist' -b2 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
+        return run(f"echo '{self._meta}' | grep -m 1 'xesam:artist' -b2 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
                    shell=True,
                    capture_output=True).stdout.decode('utf-8').strip('\n')
 
     @ property
     def song_title(self) -> str:
         return run(
-            f"echo '{self.meta}' | grep -m 1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
+            f"echo '{self._meta}' | grep -m 1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
             shell=True,
             capture_output=True).stdout.decode('utf-8').strip('\n')
 
     @ property
     def album(self) -> str:
         return run(
-            f"echo '{self.meta}' | grep -m 1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
+            f"echo '{self._meta}' | grep -m 1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
             shell=True,
             capture_output=True).stdout.decode('utf-8').strip('\n')
 
