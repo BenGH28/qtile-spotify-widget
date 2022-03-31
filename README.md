@@ -43,3 +43,7 @@ screens = [
 
 # Future
 - I would like to eventually merge this into Qtile's built-in widgets but will work on it here until I start that process
+
+# Alternatives
+
+- [Mpris2](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.Mpris2) a more generic widget that allows you to display music info from any player (audacious, vlc, etc.)
