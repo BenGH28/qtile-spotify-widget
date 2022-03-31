@@ -46,19 +46,9 @@ class Spotify(base.ThreadPoolText):
         self.add_defaults(Spotify.defaults)
         self.add_callbacks({
             'Button3': self.go_to_spotify,
+            'Button1': self.toggle_music,
+
         })
-
-    def play(self):
-        pass
-
-    def pause(self):
-        pass
-
-    def toggle_music(self):
-        if self.playing:
-            self.play()
-        else:
-            self.pause()
 
     def _is_proc_running(self, proc_name: str) -> bool:
         # create regex pattern to search for to avoid similar named processes
@@ -109,6 +99,9 @@ class Spotify(base.ThreadPoolText):
 
         # TODO: sanitize the strings for apostrophes which break the display
         return self.format.format(**vars)
+
+    def toggle_music(self):
+        run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause", shell=True)
 
     @ property
     def _meta(self) -> str:
