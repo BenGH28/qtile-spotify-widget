@@ -3,7 +3,7 @@
 
 ![image](https://user-images.githubusercontent.com/45215137/160912874-9f6ebaa4-5b9a-4fda-9fcb-ecc7d04123a9.png)
 
-# Install
+## Install
 
 - copy the file into `~/.config/qtile/spotify.py` your own `config.py` should be in the same directory
 
@@ -30,7 +30,7 @@ screens = [
 ]
 ```
 
-# Customization
+## Customization
 
 | key | default | description |
 |-----|---------|-------------|
@@ -41,10 +41,10 @@ screens = [
 
 - see also Qtile's built-in [`TextBox`](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.TextBox) for more keys to customize
 
-# Future
-- I would like to eventually merge this into Qtile's built-in widgets but will work on it here until I start that process
+## Future
+- I would like to eventually see about mergin this into Qtile's built-in widgets but will work on it here until I start that process
 
-# Alternatives
+## Alternatives
 
 - [Mpris2](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.Mpris2) a more generic widget using `dbus-next`
 that allows you to display music info from any player (audacious, vlc, etc.).
