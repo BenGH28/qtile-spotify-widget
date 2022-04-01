@@ -20,12 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from subprocess import run
+from subprocess import CompletedProcess, run
 from typing import List
 
 from libqtile.group import _Group
 from libqtile.lazy import lazy
-# from libqtile.utils import add_signal_receiver
 from libqtile.widget import base
 
 
@@ -47,7 +46,6 @@ class Spotify(base.ThreadPoolText):
         self.add_callbacks({
             'Button3': self.go_to_spotify,
             'Button1': self.toggle_music,
-
         })
 
     def _is_proc_running(self, proc_name: str) -> bool:
@@ -103,38 +101,52 @@ class Spotify(base.ThreadPoolText):
     def toggle_music(self):
         run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause", shell=True)
 
+    def get_proc_output(self, proc: CompletedProcess) -> str:
+        if proc.stderr.decode('utf-8') != "":
+            return proc.stderr.decode("utf-8")
+
+        return proc.stdout.decode('utf-8').strip('\n')
+
     @ property
     def _meta(self) -> str:
-        return run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'",
+        proc = run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'",
                    shell=True,
-                   capture_output=True).stdout.decode('utf-8').strip('\n')
+                   capture_output=True)
+
+        return proc.stdout.decode('utf-8').replace("'", "`").strip('\n')
 
     @ property
     def artist(self) -> str:
-        return run(f"echo '{self._meta}' | grep -m 1 'xesam:artist' -b2 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
-                   shell=True,
-                   capture_output=True).stdout.decode('utf-8').strip('\n')
+        proc: CompletedProcess = run(f"echo '{self._meta}' | grep -m1 'xesam:artist' -b2 | tail -n 1 | grep -o '\".*\"' | sed 's/\"//g'",
+                                     shell=True,
+                                     capture_output=True)
+
+        return self.get_proc_output(proc)
 
     @ property
     def song_title(self) -> str:
-        return run(
-            f"echo '{self._meta}' | grep -m 1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
+        proc: CompletedProcess = run(
+            f"echo '{self._meta}' | grep -m1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g'",
             shell=True,
-            capture_output=True).stdout.decode('utf-8').strip('\n')
+            capture_output=True)
+
+        return self.get_proc_output(proc)
 
     @ property
     def album(self) -> str:
-        return run(
-            f"echo '{self._meta}' | grep -m 1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' ",
+        proc = run(
+            f"echo '{self._meta}' | grep -m1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g'",
             shell=True,
-            capture_output=True).stdout.decode('utf-8').strip('\n')
+            capture_output=True)
+
+        return self.get_proc_output(proc)
 
     @ property
     def playing(self) -> bool:
-        playing = run(
-            f"dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'PlaybackStatus' | grep -o Playing",
+        play = run(
+            "dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'PlaybackStatus' | grep -o Playing",
             shell=True,
-            capture_output=True).stdout.decode('utf-8').strip('\n')
-        if playing == "":
+            capture_output=True).stdout.decode('utf-8')
+        if play == "":
             return False
         return True

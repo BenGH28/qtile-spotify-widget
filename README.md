@@ -46,4 +46,5 @@ screens = [
 
 # Alternatives
 
-- [Mpris2](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.Mpris2) a more generic widget that allows you to display music info from any player (audacious, vlc, etc.)
+- [Mpris2](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.Mpris2) a more generic widget using `dbus-next`
+that allows you to display music info from any player (audacious, vlc, etc.).
