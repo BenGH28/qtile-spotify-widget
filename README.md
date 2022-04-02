@@ -5,7 +5,21 @@
 
 ## Install
 
-- copy the file into `~/.config/qtile/spotify.py` your own `config.py` should be in the same directory
+### Copy the file
+
+- copy the `spotify.py` to `~/.config/qtile/` directory. This is the easiest option
+
+### Submodule for the dotfile addicts
+
+- add it as a submodule if you save your dotfiles with git
+
+```sh
+# using yadm (a git wrapper)
+yadm submodule add https://github.com/BenGH28/qtile-spotify-widget ~/.config/qtile/spotify
+```
+
+Note: You only need to do one of these options to have it on your system
+
 
 ## In config.py
 
