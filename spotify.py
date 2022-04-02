@@ -41,7 +41,7 @@ class Spotify(base.ThreadPoolText):
     ]
 
     def __init__(self, **config):
-        base.ThreadPoolText.__init__(self, '', **config)
+        base.ThreadPoolText.__init__(self, text='', **config)
         self.add_defaults(Spotify.defaults)
         self.add_callbacks({
             'Button3': self.go_to_spotify,
@@ -95,7 +95,6 @@ class Spotify(base.ThreadPoolText):
         vars["track"] = self.song_title
         vars["album"] = self.album
 
-        # TODO: sanitize the strings for apostrophes which break the display
         return self.format.format(**vars)
 
     def toggle_music(self):
@@ -113,7 +112,7 @@ class Spotify(base.ThreadPoolText):
                    shell=True,
                    capture_output=True)
 
-        return proc.stdout.decode('utf-8').replace("'", "`").strip('\n')
+        return proc.stdout.decode('utf-8').replace("'", "ʼ").strip('\n')
 
     @ property
     def artist(self) -> str:

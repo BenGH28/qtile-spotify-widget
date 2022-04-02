@@ -48,3 +48,7 @@ screens = [
 
 - [Mpris2](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.Mpris2) a more generic widget using `dbus-next`
 that allows you to display music info from any player (audacious, vlc, etc.).
+
+## Credits
+
+- [Feqzz/tmux-spotify-info](https://github.com/Feqzz/tmux-spotify-info/blob/master/scripts/get_current_song.sh) for getting the relevant Spotify info from dbus.
