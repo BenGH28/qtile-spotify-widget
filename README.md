@@ -55,9 +55,6 @@ screens = [
 
 - see also Qtile's built-in [`TextBox`](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.TextBox) for more keys to customize
 
-## Future
-- I would like to eventually see about mergin this into Qtile's built-in widgets but will work on it here until I start that process
-
 ## Alternatives
 
 - [Mpris2](https://docs.qtile.org/en/stable/manual/ref/widgets.html#libqtile.widget.Mpris2) a more generic widget using `dbus-next`
