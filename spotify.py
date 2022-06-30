@@ -24,7 +24,7 @@ from subprocess import CompletedProcess, run
 from typing import List
 
 from libqtile.group import _Group
-from libqtile.lazy import lazy
+# from libqtile.lazy import lazy
 from libqtile.widget import base
 
 
@@ -102,9 +102,9 @@ class Spotify(base.ThreadPoolText):
 
     def get_proc_output(self, proc: CompletedProcess) -> str:
         if proc.stderr.decode('utf-8') != "":
-            return proc.stderr.decode("utf-8")
+            return "" if "org.mpris.MediaPlayer2.spotify" in proc.stderr.decode("utf-8") else proc.stderr.decode("utf-8")
 
-        return proc.stdout.decode('utf-8').strip('\n')
+        return proc.stdout.decode('utf-8').rstrip()
 
     @ property
     def _meta(self) -> str:
@@ -112,20 +112,22 @@ class Spotify(base.ThreadPoolText):
                    shell=True,
                    capture_output=True)
 
-        return proc.stdout.decode('utf-8').replace("'", "ʼ").strip('\n')
+        output: str = proc.stdout.decode('utf-8').replace("'", "ʼ").rstrip()
+        return "" if("org.mpris.MediaPlayer2.spotify" in output) else output
 
     @ property
     def artist(self) -> str:
-        proc: CompletedProcess = run(f"echo '{self._meta}' | grep -m1 'xesam:artist' -b2 | tail -n 1 | grep -o '\".*\"' | sed 's/\"//g'",
+        proc: CompletedProcess = run("dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata' | grep -m1 'xesam:artist' -b2 | tail -n 1 | grep -o '\".*\"' | sed 's/\"//g' | sed -e 's/&/and/g'",
                                      shell=True,
                                      capture_output=True)
 
-        return self.get_proc_output(proc)
+        out = self.get_proc_output(proc)
+        return out
 
     @ property
     def song_title(self) -> str:
         proc: CompletedProcess = run(
-            f"echo '{self._meta}' | grep -m1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g'",
+            f"echo '{self._meta}' | grep -m1 'xesam:title' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' | sed -e 's/&/and/g'",
             shell=True,
             capture_output=True)
 
@@ -134,11 +136,12 @@ class Spotify(base.ThreadPoolText):
     @ property
     def album(self) -> str:
         proc = run(
-            f"echo '{self._meta}' | grep -m1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g'",
+            f"echo '{self._meta}' | grep -m1 'xesam:album' -b1 | tail -n1 | grep -o '\".*\"' | sed 's/\"//g' | sed -e 's/&/and/g'",
             shell=True,
             capture_output=True)
 
-        return self.get_proc_output(proc)
+        output: str = self.get_proc_output(proc)
+        return output
 
     @ property
     def playing(self) -> bool:
