@@ -63,7 +63,7 @@ class Spotify(base.ThreadPoolText):
         )
 
         # empty string means nothing started
-        is_running = proc_out == ""
+        is_running = proc_out != ""
 
         return is_running
 
@@ -73,7 +73,6 @@ class Spotify(base.ThreadPoolText):
         so you can toggle between the 2 groups
         """
         current_screen: Screen = self.qtile.current_screen
-        current_group_name: str = self.qtile.current_group.name
         current_group_info = self.qtile.current_group.info()
         windows = current_group_info["windows"]
         if SPOTIFY in windows:
@@ -188,5 +187,5 @@ class Spotify(base.ThreadPoolText):
             capture_output=True,
         ).stdout.decode("utf-8")
 
-        is_running = play == ""
+        is_running = play != ""
         return is_running
