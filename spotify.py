@@ -55,17 +55,14 @@ class Spotify(base.ThreadPoolText):
 
     def _is_proc_running(self, proc_name: str) -> bool:
         # create regex pattern to search for to avoid similar named processes
-        pattern = proc_name + "$"
+        pattern = f"{proc_name}$"
 
         # pgrep will return a string of pids for matching processes
         proc_out = run(["pgrep", "-fli", pattern], capture_output=True).stdout.decode(
             "utf-8"
         )
 
-        # empty string means nothing started
-        is_running = proc_out != ""
-
-        return is_running
+        return proc_out != ""
 
     def toggle_between_groups(self) -> None:
         """
@@ -97,8 +94,8 @@ class Spotify(base.ThreadPoolText):
             info = group.info()
             # get a list of windows for the group.  We look for 'Spotify here'
             windows = info["windows"]
-            name = group.name
             if SPOTIFY in windows:
+                name = group.name
                 # switch to 'name' group
                 spotify_group = self.qtile.groups_map[name]
                 spotify_group.cmd_toscreen()
@@ -106,15 +103,12 @@ class Spotify(base.ThreadPoolText):
 
     def poll(self) -> str:
         """Poll content for the text box"""
-        vars = {}
-        if self.playing:
-            vars["icon"] = self.play_icon
-        else:
-            vars["icon"] = self.pause_icon
-
-        vars["artist"] = self.artist
-        vars["track"] = self.song_title
-        vars["album"] = self.album
+        vars = {
+            "icon": self.play_icon if self.playing else self.pause_icon,
+            "artist": self.artist,
+            "track": self.song_title,
+            "album": self.album,
+        }
 
         return self.format.format(**vars)
 
@@ -132,8 +126,7 @@ class Spotify(base.ThreadPoolText):
                 else proc.stderr.decode("utf-8")
             )
 
-        output = proc.stdout.decode("utf-8").rstrip()
-        return output
+        return proc.stdout.decode("utf-8").rstrip()
 
     @property
     def _meta(self) -> str:
@@ -154,8 +147,7 @@ class Spotify(base.ThreadPoolText):
             capture_output=True,
         )
 
-        output = self.get_proc_output(proc)
-        return output
+        return self.get_proc_output(proc)
 
     @property
     def song_title(self) -> str:
@@ -165,8 +157,7 @@ class Spotify(base.ThreadPoolText):
             capture_output=True,
         )
 
-        output = self.get_proc_output(proc)
-        return output
+        return self.get_proc_output(proc)
 
     @property
     def album(self) -> str:
@@ -176,8 +167,7 @@ class Spotify(base.ThreadPoolText):
             capture_output=True,
         )
 
-        output: str = self.get_proc_output(proc)
-        return output
+        return self.get_proc_output(proc)
 
     @property
     def playing(self) -> bool:
@@ -187,5 +177,4 @@ class Spotify(base.ThreadPoolText):
             capture_output=True,
         ).stdout.decode("utf-8")
 
-        is_running = play != ""
-        return is_running
+        return play != ""
