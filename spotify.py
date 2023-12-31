@@ -27,6 +27,7 @@ from libqtile.group import _Group
 from libqtile.config import Screen
 
 from libqtile.widget import base
+from libqtile.log_utils import logger
 
 SPOTIFY = "Spotify"
 
@@ -44,11 +45,11 @@ class Spotify(base.ThreadPoolText):
     ]
 
     def __init__(self, **config) -> None:
-        base.ThreadPoolText.__init__(self, text="", **config)
+        # init base class
+        super().__init__(text="", **config)
         self.add_defaults(Spotify.defaults)
         self.add_callbacks(
             {
-                "Button3": self.toggle_between_groups,
                 "Button1": self.toggle_music,
             }
         )
@@ -71,10 +72,13 @@ class Spotify(base.ThreadPoolText):
         """
         current_screen: Screen = self.qtile.current_screen
         current_group_info = self.qtile.current_group.info()
+        logger.warning(f"current group info: {current_group_info}")
         windows = current_group_info["windows"]
         if SPOTIFY in windows:
             # go to previous group
-            current_screen.previous_group.cmd_toscreen()
+            logger.warning("going to previous group")
+            current_screen.group.get_previous_group().toscreen()
+            logger.warning("went to previous group")
         else:
             self.go_to_spotify()
 
@@ -85,7 +89,7 @@ class Spotify(base.ThreadPoolText):
         """
         # spawn spotify if not already running
         if not self._is_proc_running("spotify"):
-            self.qtile.cmd_spawn("spotify", shell=True)
+            self.qtile.spawn("spotify", shell=True)
             return
 
         all_groups: List[_Group] = self.qtile.groups
@@ -98,10 +102,10 @@ class Spotify(base.ThreadPoolText):
                 name = group.name
                 # switch to 'name' group
                 spotify_group = self.qtile.groups_map[name]
-                spotify_group.cmd_toscreen()
+                spotify_group.toscreen()
                 break
 
-    def poll(self) -> str:
+    def poll(self) -> str: # type: ignore
         """Poll content for the text box"""
         vars = {
             "icon": self.play_icon if self.playing else self.pause_icon,
@@ -110,7 +114,7 @@ class Spotify(base.ThreadPoolText):
             "album": self.album,
         }
 
-        return self.format.format(**vars)
+        return self.format.format(**vars) # type: ignore 
 
     def toggle_music(self) -> None:
         run(
